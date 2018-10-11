@@ -88,5 +88,3 @@ if __name__ == "__main__":
             f.write(new_key["data"])
 
         print("Key saved to -->", outfile)
-    else:
-        print(os.access(os.path.dirname(outfile), os.W_OK))
