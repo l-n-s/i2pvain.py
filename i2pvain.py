@@ -3,6 +3,7 @@ import sys
 import os
 import struct
 import socket
+import re
 
 from hashlib import sha256
 from base64 import b32encode, b64decode, b64encode
@@ -57,16 +58,8 @@ def get_new_destination(sam_address):
         print(reply)
         exit()
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: {} PREFIX [FILE]".format(sys.argv[0]))
-        exit()
-    else:
-        prefix = sys.argv[1].upper().encode()
-        if len(sys.argv) == 3:
-            outfile = sys.argv[2]
-        else:
-            outfile = "key.dat"
+def generate_address(prefix):
+    prefix = prefix.upper().encode()
 
     data = get_new_destination(get_sam_address())
 
@@ -80,6 +73,26 @@ if __name__ == "__main__":
     new_key = q.get()
     for x in processes: x.terminate()
 
+    return new_key
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: {} PREFIX [FILE]".format(sys.argv[0]))
+        return
+
+    prefix = sys.argv[1]
+
+    if not re.match("^[a-zA-Z0-9]+$", prefix):
+        print("Prefix must be alphanumeric string")
+        return
+
+    if len(sys.argv) == 3:
+        outfile = sys.argv[2]
+    else:
+        outfile = "key.dat"
+
+    new_key = generate_address(prefix)
+
     print(new_key["address"] + ".b32.i2p")
     print(b64encode(new_key["data"], altchars=b"-~").decode())
 
@@ -88,3 +101,8 @@ if __name__ == "__main__":
             f.write(new_key["data"])
 
         print("Key saved to -->", outfile)
+
+
+
+if __name__ == "__main__":
+    main()
